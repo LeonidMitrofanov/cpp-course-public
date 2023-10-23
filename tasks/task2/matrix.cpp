@@ -1,74 +1,100 @@
 #include <stdexcept>
-
+#include <iostream>
 #include "matrix.h"
 
 using namespace std;
 using RowMatrix = Matrix::RowMatrix;
 
-RowMatrix::RowMatrix (double *array, size_t size) {
+RowMatrix::RowMatrix(double *array, size_t size) : _array(array), _size(size) {}
 
+const double &RowMatrix::operator[](size_t j) const {
+    if (j >= _size) throw std::out_of_range("");
+    return _array[j];
 }
 
-const double & RowMatrix::operator[] (size_t j) const {
-
+double &RowMatrix::operator[](size_t j) {
+    if (j >= _size) throw std::out_of_range("");
+    return _array[j];
 }
 
-double & RowMatrix::operator[] (size_t j) {
+Matrix::Matrix() : _rows(0), _cols(0), _array(nullptr) {}
 
+Matrix::Matrix(size_t r, size_t c) : _rows(r), _cols(c) {
+    _array = new double[r * c]();
 }
 
-RowMatrix::~RowMatrix(){}
-
-
-
-Matrix::Matrix() {
-
+Matrix::Matrix(const Matrix &copy_from) : _rows(copy_from.rows()), _cols(copy_from.cols()) {
+    _array = new double[_rows * _cols];
+    for (size_t i = 0; i < _rows * _cols; i++) {
+        _array[i] = copy_from._array[i];
+    }
 }
 
-Matrix::Matrix(size_t r, size_t c): _rows(r), _cols(c) {
-
+Matrix& Matrix::operator=(const Matrix &move_from) {
+    if (this == &move_from) {
+        return *this;
+    }
+    if (_array) {
+        delete[] _array;
+    }
+    _rows = move_from.rows();
+    _cols = move_from.cols();
+    _array = new double[_rows * _cols];
+    for (size_t i = 0; i < _rows * _cols; i++) {
+        _array[i] = move_from._array[i];
+    }
+    return *this;
 }
 
-Matrix::Matrix(const Matrix & copy_from) {
-
+const RowMatrix Matrix::operator[](size_t row_num) const {
+    if (row_num >= _rows) throw std::out_of_range("");
+    return RowMatrix(_array + row_num * _cols, _cols);
 }
 
-Matrix& Matrix::operator=(const Matrix & move_from) {
-
+RowMatrix Matrix::operator[](size_t row_num) {
+    if (row_num >= _rows) throw std::out_of_range("");
+    return RowMatrix(_array + row_num * _cols, _cols);
 }
 
-const RowMatrix Matrix::operator[] (size_t row_num) const {
+RowMatrix::~RowMatrix() {}
 
+Matrix& Matrix::operator*=(double k) {
+    for (size_t i = 0; i < _rows * _cols; i++) {
+        _array[i] *= k;
+    }
+    return *this;
 }
 
-RowMatrix Matrix::operator[] (size_t row_num) {
-
+Matrix Matrix::operator*(double k)  {
+    Matrix result(*this);
+    result *= k;
+    return result;
 }
 
-Matrix& Matrix::operator*= (double k) {
-
+bool Matrix::operator==( Matrix &matrix)  {
+    if (_rows != matrix.rows() || _cols != matrix.cols()) {
+        return false;
+    }
+    for (size_t i = 0; i < _rows * _cols; i++) {
+        if (_array[i] != matrix._array[i]) {
+            return false;
+        }
+    }
+    return true;
 }
 
-Matrix Matrix::operator* (double k) {
-
-}
-
-bool Matrix::operator== (Matrix & matrix) {
-
-}
-
-bool Matrix::operator!= (Matrix & matrix) {
-
+bool Matrix::operator!=( Matrix &matrix) {
+    return !(*this == matrix);
 }
 
 size_t Matrix::cols() const {
-
+    return _cols;
 }
 
 size_t Matrix::rows() const {
-
+    return _rows;
 }
 
 Matrix::~Matrix() {
-
+    delete[] _array;
 }
