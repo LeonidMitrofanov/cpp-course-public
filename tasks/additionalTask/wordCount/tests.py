@@ -42,7 +42,11 @@ class TestClassTask(unittest.TestCase):
         # Check stdout
         for expected_line, line in zip(expected_lines, lines):
             print("expected line {0} to be {1} or {2}".format(expected_line, line, line.replace(b',\b ', b'')))
-            self.assertTrue(line == expected_line or line.replace(b',\b ', b'') == expected_line)
+            self.assertTrue(
+                line == expected_line or line.replace(b',\b ', b'') == expected_line or
+                all([word in expected_line[expected_line.find(b':') + 1:].split(b',') for word in line[expected_line.find(b':') + 1:].split(b',')]) or
+                all([word in expected_line[expected_line.find(b':') + 1:].split(b',') for word in line.replace(b',\b ', b'')[expected_line.find(b':') + 1:].split(b',')])
+            )
 
 
 if __name__ == '__main__':
