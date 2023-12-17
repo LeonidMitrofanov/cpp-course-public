@@ -43,18 +43,43 @@ public:
 
 
     static double integralFunction(double x) {
-        // тут нужно реализовать функцию интеграла S(a, b) = (1+e^x)^0.5 dx
-        return 0;
+        return sqrt(1 + exp(x));
+    }
+
+    // Функция, считающая интеграл методом трапеций 
+    // на отрезка [a, b] и n разбиениями
+    double trapezoidalIntegral(double local_a, double local_b, int local_n) {
+        double h = (local_b - local_a) / local_n;
+        double sum = (integralFunction(local_a) + integralFunction(local_b)) / 2.0;
+
+        for (int i = 1; i < local_n; ++i) {
+            double x_i = local_a + i * h;
+            sum += integralFunction(x_i);
+        }
+        return sum * h;
     }
 
 
     double calculateIntegral() {
         // в зависимости от количество потоков (tn) реализуйте подсчёт интеграла
-        return 0;
+        double total_integral = 0.0;
+        std::vector<double> local_integrals(tn);
+        std::vector<std::thread> threads;
+
+        for (int i = 0; i < tn; ++i) {
+            double local_a = a + i * (b - a) / tn;
+            double local_b = a + (i + 1) * (b - a) / tn;
+            int local_n = n / tn;
+
+            threads.emplace_back([=, &local_integrals] {
+                local_integrals[i] = trapezoidalIntegral(local_a, local_b, local_n);
+            });
+        }
+        for (auto& thread : threads) thread.join();
+        for (auto local_integral : local_integrals) total_integral += local_integral;
+        return total_integral;
     }
-
 };
-
 
 
 int main(int argc, char** argv)
