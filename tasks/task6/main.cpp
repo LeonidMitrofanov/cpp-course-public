@@ -41,7 +41,6 @@ public:
         tn = std::stoi(argv[4]);
     }
 
-
     static double integralFunction(double x) {
         return sqrt(1 + exp(x));
     }
@@ -59,7 +58,6 @@ public:
         return sum * h;
     }
 
-
     double calculateIntegral() {
         // в зависимости от количество потоков (tn) реализуйте подсчёт интеграла
         double total_integral = 0.0;
@@ -75,7 +73,8 @@ public:
                 local_integrals[i] = trapezoidalIntegral(local_a, local_b, local_n);
             });
         }
-        for (auto& thread : threads) thread.join();
+
+        for (auto& thread : threads) thread.join(); // Ждем завершения выполнения потоков
         for (auto local_integral : local_integrals) total_integral += local_integral;
         return total_integral;
     }
